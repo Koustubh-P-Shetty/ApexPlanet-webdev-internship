@@ -21,20 +21,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $oldUsername = $_POST['old_username'];
     $newUsername = $_POST['username'];
     $email = $_POST['email'];
-    $password = $_POST['password'];
     $dateOfBirth = $_POST['date_of_birth'];
     $gender = $_POST['gender'];
 
-    if (!empty($password)) {
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        $sql_update = "UPDATE users SET username=?, email=?, password=?, date_of_birth=?, gender=? WHERE username=?";
-        $stmt = $conn->prepare($sql_update);
-        $stmt->bind_param("ssssss", $newUsername, $email, $hashed_password, $dateOfBirth, $gender, $oldUsername);
-    } else {
-        $sql_update = "UPDATE users SET username=?, email=?, date_of_birth=?, gender=? WHERE username=?";
-        $stmt = $conn->prepare($sql_update);
-        $stmt->bind_param("sssss", $newUsername, $email, $dateOfBirth, $gender, $oldUsername);
-    }
+    $sql_update = "UPDATE users SET username=?, email=?, date_of_birth=?, gender=? WHERE username=?";
+    $stmt = $conn->prepare($sql_update);
+    $stmt->bind_param("sssss", $newUsername, $email, $dateOfBirth, $gender, $oldUsername);
 
     if ($stmt->execute()) {
         header("Location: dashboard.php");
@@ -98,7 +90,7 @@ $conn->close();
             color: #555;
             margin-bottom: 5px;
         }
-        input[type="text"], input[type="email"], input[type="password"], input[type="date"], select {
+        input[type="text"], input[type="email"], input[type="date"], select {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
@@ -148,8 +140,6 @@ $conn->close();
                 <option value="female" <?php echo $user['gender'] == 'female' ? 'selected' : ''; ?>>Female</option>
                 <option value="other" <?php echo $user['gender'] == 'other' ? 'selected' : ''; ?>>Other</option>
             </select>
-            <label for="password">Password (leave blank to keep current password):</label>
-            <input type="password" id="password" name="password">
             <input type="submit" value="Update">
         </form>
         <a href="dashboard.php" class="btn">Back to Dashboard</a>

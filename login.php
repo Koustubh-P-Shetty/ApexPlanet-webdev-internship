@@ -1,15 +1,13 @@
 <?php
-// Handle login submission
+$error = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $servername = "localhost";
     $username = "root";
     $password = "";
     $dbname = "user_management";
 
-    // Create connection
     $conn = new mysqli($servername, $username, $password, $dbname);
 
-    // Check connection
     if ($conn->connect_error) {
         die("Connection failed: " . $conn->connect_error);
     }
@@ -17,38 +15,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // Validate input fields
     if (empty($email) || empty($password)) {
-        echo "<p>Please fill in all fields.</p>";
-        echo '<a href="login.php">Go Back to Login</a>';
-        $conn->close();
-        exit();
-    }
-
-    // Check if the email exists in the database
-    $sql = "SELECT * FROM users WHERE email = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        $user = $result->fetch_assoc();
-
-        // Verify password
-        if (password_verify($password, $user['password'])) {
-            session_start();
-            $_SESSION['username'] = $user['username'];
-            header("Location: dashboard.php"); // Redirect to the dashboard page
-            exit();
-        } else {
-            echo "<p>Invalid email or password.</p>";
-        }
+        $error = "Please fill in all fields.";
     } else {
-        echo "<p>No user found with this email.</p>";
+        $sql = "SELECT * FROM users WHERE email = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $user = $result->fetch_assoc();
+            if (password_verify($password, $user['password'])) {
+                session_start();
+                $_SESSION['username'] = $user['username'];
+                header("Location: dashboard.php");
+                exit();
+            } else {
+                $error = "Invalid email or password. Please try again.";
+            }
+        } else {
+            $error = "No account found with this email. Please <a href='register.php'>register here</a>.";
+        }
+
+        $stmt->close();
     }
 
-    $stmt->close();
     $conn->close();
 }
 ?>
@@ -112,6 +104,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         input[type="submit"]:hover {
             background-color: #0056b3;
         }
+        .error {
+            color: red;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
         a {
             text-align: center;
             margin-top: 20px;
@@ -125,6 +123,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
     <div class="container">
+        <?php if (!empty($error)): ?>
+            <div class="error"><?php echo $error; ?></div>
+        <?php endif; ?>
+
         <form action="login.php" method="post">
             <h2>Login</h2>
             <label for="email">Email:</label>

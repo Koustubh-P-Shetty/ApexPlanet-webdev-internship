@@ -1,34 +1,40 @@
 <?php
-// Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $servername = "localhost";
     $username = "root";
     $password = "";
-    $dbname = "user_management"; 
+    $dbname = "user_management";
 
-    // Create connection
     $conn = new mysqli($servername, $username, $password, $dbname);
 
-    // Check connection
     if ($conn->connect_error) {
         die("Connection failed: " . $conn->connect_error);
     }
 
-    $username = $_POST['username'];
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+    $username = trim($_POST['username']);
+    $email = trim($_POST['email']);
+    $password = trim($_POST['password']);
     $dateOfBirth = $_POST['date_of_birth'];
     $gender = $_POST['gender'];
 
-    // Validate input fields
     if (empty($username) || empty($email) || empty($password) || empty($dateOfBirth) || empty($gender)) {
-        echo "<p>Please fill in all fields.</p>";
-        echo '<a href="register.php">Go Back to Register</a>';
+        echo "<script>alert('Please fill in all fields.'); window.history.back();</script>";
         $conn->close();
         exit();
     }
 
-    // Check if email or username already exists
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo "<script>alert('Invalid email format.'); window.history.back();</script>";
+        $conn->close();
+        exit();
+    }
+
+    if (strlen($password) < 6) {
+        echo "<script>alert('Password must be at least 6 characters long.'); window.history.back();</script>";
+        $conn->close();
+        exit();
+    }
+
     $sql_check = "SELECT * FROM users WHERE email = ? OR username = ?";
     $stmt_check = $conn->prepare($sql_check);
     $stmt_check->bind_param("ss", $email, $username);
@@ -36,29 +42,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $result_check = $stmt_check->get_result();
 
     if ($result_check->num_rows > 0) {
-        echo "<p>This email or username is already registered. Please use another one.</p>";
-        echo '<a href="register.php">Go Back to Register</a>';
+        echo "<script>alert('This email or username is already registered. Please use another one.'); window.history.back();</script>";
         $stmt_check->close();
         $conn->close();
         exit();
     }
 
     $stmt_check->close();
-
-    // Hash the password
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-    // Insert new user into the database
     $sql = "INSERT INTO users (username, email, password, date_of_birth, gender) VALUES (?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sssss", $username, $email, $hashed_password, $dateOfBirth, $gender);
 
     if ($stmt->execute()) {
-        // Redirect to login page after successful registration
-        header("Location: login.php");
+        echo "<script>alert('Registration successful!'); window.location.href = 'login.php';</script>";
         exit();
     } else {
-        echo "<p>Error: " . $stmt->error . "</p>";
+        echo "<script>alert('Error: " . $stmt->error . "'); window.history.back();</script>";
     }
 
     $stmt->close();
@@ -135,10 +136,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             text-decoration: underline;
         }
     </style>
+    <script>
+        function validateForm() {
+            var username = document.forms["registerForm"]["username"].value;
+            var email = document.forms["registerForm"]["email"].value;
+            var password = document.forms["registerForm"]["password"].value;
+            var dateOfBirth = document.forms["registerForm"]["date_of_birth"].value;
+            var gender = document.forms["registerForm"]["gender"].value;
+
+            if (username == "" || email == "" || password == "" || dateOfBirth == "" || gender == "") {
+                alert("All fields must be filled out.");
+                return false;
+            }
+
+            var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                alert("Invalid email format.");
+                return false;
+            }
+
+            if (password.length < 6) {
+                alert("Password must be at least 6 characters long.");
+                return false;
+            }
+
+            return true;
+        }
+    </script>
 </head>
 <body>
     <div class="container">
-        <form action="register.php" method="post">
+        <form name="registerForm" action="register.php" method="post" onsubmit="return validateForm()">
             <h2>Register</h2>
 
             <label for="username">Username:</label>

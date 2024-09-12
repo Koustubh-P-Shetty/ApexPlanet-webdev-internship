@@ -19,6 +19,7 @@ if ($conn->connect_error) {
 
 $loggedInUsername = $_SESSION['username'];
 
+// Validate user information
 $sql_user = "SELECT username, email, date_of_birth, gender FROM users WHERE username=?";
 $stmt_user = $conn->prepare($sql_user);
 $stmt_user->bind_param("s", $loggedInUsername);
@@ -28,10 +29,11 @@ $result_user = $stmt_user->get_result();
 if ($result_user->num_rows > 0) {
     $user = $result_user->fetch_assoc();
 } else {
-    echo "Error fetching user information.";
+    echo "<p style='color: red; text-align: center;'>Error fetching user information. Please try again.</p>";
     exit();
 }
 
+// Fetch all users
 $sql_all_users = "SELECT username, email, date_of_birth, gender FROM users";
 $result_all_users = $conn->query($sql_all_users);
 
@@ -136,6 +138,12 @@ $conn->close();
         .delete-btn:hover {
             background-color: #c82333;
         }
+        .error {
+            color: red;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -161,6 +169,7 @@ $conn->close();
             <?php
             if ($result_all_users->num_rows > 0) {
                 while ($row = $result_all_users->fetch_assoc()) {
+                    // Ensure data is properly escaped and formatted
                     echo "<tr>";
                     echo "<td>" . htmlspecialchars($row['username']) . "</td>";
                     echo "<td>" . htmlspecialchars($row['email']) . "</td>";
@@ -173,7 +182,7 @@ $conn->close();
                     echo "</tr>";
                 }
             } else {
-                echo "<tr><td colspan='5'>No users found.</td></tr>";
+                echo "<tr><td colspan='5' class='error'>No users found.</td></tr>";
             }
             ?>
         </table>

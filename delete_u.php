@@ -17,6 +17,8 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+$usernameLoggedIn = $_SESSION['username']; // The username of the logged-in user
+
 if (isset($_GET['username'])) {
     $usernameToDelete = $_GET['username'];
 
@@ -35,7 +37,14 @@ if (isset($_GET['username'])) {
             $stmt_delete->bind_param("s", $usernameToDelete);
 
             if ($stmt_delete->execute()) {
-                header("Location: dashboard.php");
+                if ($usernameToDelete == $usernameLoggedIn) {
+                    // If the user is deleting their own account, redirect to login.php
+                    session_destroy();
+                    header("Location: login.php");
+                } else {
+                    // Otherwise, redirect to dashboard.php
+                    header("Location: dashboard.php");
+                }
                 exit();
             } else {
                 echo "<p>Error: " . $stmt_delete->error . "</p>";

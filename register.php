@@ -80,16 +80,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f4f4f4;
-            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .container {
             background-color: #fff;
-            padding: 20px 40px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            max-width: 450px;
             width: 100%;
+            transition: box-shadow 0.3s ease;
+        }
+        .container:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         }
         form {
             display: flex;
@@ -97,77 +101,70 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         h2 {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             color: #333;
         }
         label {
             font-weight: bold;
-            color: #555;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            color: #444;
         }
         input[type="text"], input[type="email"], input[type="password"], input[type="date"], select {
             width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
+            padding: 12px 15px;
+            margin-bottom: 20px;
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 6px;
             box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="date"]:focus, select:focus {
+            border-color: #007bff;
+            outline: none;
         }
         input[type="submit"] {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
         }
         input[type="submit"]:hover {
             background-color: #0056b3;
         }
         a {
+            display: block;
             text-align: center;
-            margin-top: 20px;
+            margin-top: 15px;
             color: #007bff;
             text-decoration: none;
+            transition: color 0.3s ease;
         }
         a:hover {
-            text-decoration: underline;
+            color: #0056b3;
+        }
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            h2 {
+                font-size: 1.5rem;
+            }
+            input[type="submit"] {
+                font-size: 16px;
+            }
         }
     </style>
-    <script>
-        function validateForm() {
-            var username = document.forms["registerForm"]["username"].value;
-            var email = document.forms["registerForm"]["email"].value;
-            var password = document.forms["registerForm"]["password"].value;
-            var dateOfBirth = document.forms["registerForm"]["date_of_birth"].value;
-            var gender = document.forms["registerForm"]["gender"].value;
-
-            if (username == "" || email == "" || password == "" || dateOfBirth == "" || gender == "") {
-                alert("All fields must be filled out.");
-                return false;
-            }
-
-            var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailPattern.test(email)) {
-                alert("Invalid email format.");
-                return false;
-            }
-
-            if (password.length < 6) {
-                alert("Password must be at least 6 characters long.");
-                return false;
-            }
-
-            return true;
-        }
-    </script>
 </head>
 <body>
     <div class="container">
         <form name="registerForm" action="register.php" method="post" onsubmit="return validateForm()">
-            <h2>Register</h2>
+            <h2>Create Account</h2>
 
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required>

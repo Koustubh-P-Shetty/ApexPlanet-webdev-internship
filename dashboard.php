@@ -33,10 +33,6 @@ if ($result_user->num_rows > 0) {
     exit();
 }
 
-// Fetch all users
-$sql_all_users = "SELECT username, email, date_of_birth, gender FROM users";
-$result_all_users = $conn->query($sql_all_users);
-
 $stmt_user->close();
 $conn->close();
 ?>
@@ -54,95 +50,62 @@ $conn->close();
             align-items: flex-start;
             height: 100vh;
             margin: 0;
-            background-color: #f4f4f4;
-            font-family: Arial, sans-serif;
+            background-color: #eef2f7;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .container {
             background-color: #fff;
-            padding: 20px 40px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            max-width: 800px;
+            padding: 30px 40px;
+            border-radius: 10px;
+            box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
             width: 100%;
-            margin-top: 40px;
+            margin-top: 50px;
+            transition: box-shadow 0.3s ease;
+        }
+        .container:hover {
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
         }
         header {
             text-align: center;
             padding: 20px 0;
+            border-bottom: 2px solid #007bff;
         }
         h1 {
             margin: 0;
+            font-size: 28px;
             color: #333;
         }
         .profile-info {
             padding: 20px;
-            border-bottom: 2px solid #007bff;
-            margin-bottom: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            margin-bottom: 30px;
         }
         .profile-info h2 {
             margin: 0;
             font-size: 24px;
             color: #007bff;
+            margin-bottom: 10px;
         }
         .profile-info p {
             font-size: 16px;
             color: #555;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-        th {
-            background-color: #007bff;
-            color: #fff;
-        }
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
+            margin: 5px 0;
         }
         .btn {
             display: inline-block;
-            padding: 10px 20px;
-            background-color: #007bff;
+            padding: 10px 15px;
+            font-size: 16px;
             color: #fff;
+            background-color: #007bff;
             text-decoration: none;
             border-radius: 5px;
-            text-align: center;
+            transition: background-color 0.3s ease;
+            margin-right: 10px;
         }
         .btn:hover {
             background-color: #0056b3;
-        }
-        .action-btn {
-            padding: 5px 10px;
-            margin: 0 5px;
-            border: none;
-            border-radius: 5px;
-            color: #fff;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .update-btn {
-            background-color: #007bff;
-        }
-        .update-btn:hover {
-            background-color: #0056b3;
-        }
-        .delete-btn {
-            background-color: #dc3545;
-        }
-        .delete-btn:hover {
-            background-color: #c82333;
-        }
-        .error {
-            color: red;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -157,36 +120,8 @@ $conn->close();
             <p>Date of Birth: <?php echo htmlspecialchars($user['date_of_birth']); ?></p>
             <p>Gender: <?php echo htmlspecialchars($user['gender']); ?></p>
         </div>
-        <h2>All Users</h2>
-        <table>
-            <tr>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Date of Birth</th>
-                <th>Gender</th>
-                <th>Actions</th>
-            </tr>
-            <?php
-            if ($result_all_users->num_rows > 0) {
-                while ($row = $result_all_users->fetch_assoc()) {
-                    // Ensure data is properly escaped and formatted
-                    echo "<tr>";
-                    echo "<td>" . htmlspecialchars($row['username']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['email']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['date_of_birth']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['gender']) . "</td>";
-                    echo "<td>";
-                    echo "<a href='update_u.php?username=" . urlencode($row['username']) . "' class='action-btn update-btn'>Update</a>";
-                    echo "<a href='delete_u.php?username=" . urlencode($row['username']) . "' class='action-btn delete-btn'>Delete</a>";
-                    echo "</td>";
-                    echo "</tr>";
-                }
-            } else {
-                echo "<tr><td colspan='5' class='error'>No users found.</td></tr>";
-            }
-            ?>
-        </table>
-        <a href="logout.php" class="btn">Logout</a>
+        <a href="user_manager.php" class="btn">Manage Users</a> <!-- Button to user management page -->
+        <a href="logout.php" class="btn">Logout</a> <!-- Logout button -->
     </div>
 </body>
 </html>

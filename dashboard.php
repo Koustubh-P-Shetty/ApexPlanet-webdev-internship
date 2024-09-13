@@ -20,7 +20,7 @@ if ($conn->connect_error) {
 $loggedInUsername = $_SESSION['username'];
 
 // Validate user information
-$sql_user = "SELECT username, email, date_of_birth, gender FROM users WHERE username=?";
+$sql_user = "SELECT username, email, date_of_birth, gender, profile_picture FROM users WHERE username=?";
 $stmt_user = $conn->prepare($sql_user);
 $stmt_user->bind_param("s", $loggedInUsername);
 $stmt_user->execute();
@@ -35,6 +35,23 @@ if ($result_user->num_rows > 0) {
 
 $stmt_user->close();
 $conn->close();
+
+// Set the profile picture path
+$profilePicture = htmlspecialchars($user['profile_picture']);
+$profilePicturePath = $profilePicture ? $profilePicture : 'dup.png';
+
+// Fetch a random thought
+$thoughtApiUrl = 'https://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en';
+$thoughtResponse = file_get_contents($thoughtApiUrl);
+
+if ($thoughtResponse === FALSE) {
+    $thought = "Unable to fetch thought at this time.";
+    $author = "";
+} else {
+    $thoughtData = json_decode($thoughtResponse, true);
+    $thought = htmlspecialchars($thoughtData['quoteText'] ?? "No thought available.");
+    $author = htmlspecialchars($thoughtData['quoteAuthor'] ?? "Unknown");
+}
 ?>
 
 <!DOCTYPE html>
@@ -62,6 +79,8 @@ $conn->close();
             width: 100%;
             margin-top: 50px;
             transition: box-shadow 0.3s ease;
+            /* Add padding to create space for buttons */
+            padding-bottom: 100px; /* Adjust this value as needed */
         }
         .container:hover {
             box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
@@ -81,6 +100,7 @@ $conn->close();
             background-color: #f9f9f9;
             border-radius: 8px;
             margin-bottom: 30px;
+            text-align: center;
         }
         .profile-info h2 {
             margin: 0;
@@ -92,6 +112,13 @@ $conn->close();
             font-size: 16px;
             color: #555;
             margin: 5px 0;
+        }
+        .profile-info img {
+            width: 150px; /* Adjust size as needed */
+            height: 150px; /* Adjust size as needed */
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
         }
         .btn {
             display: inline-block;
@@ -107,6 +134,27 @@ $conn->close();
         .btn:hover {
             background-color: #0056b3;
         }
+        .thought {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f2f2f2;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .thought p {
+            font-size: 18px;
+            color: #555;
+            margin: 0;
+        }
+        .thought .author {
+            font-size: 16px;
+            color: #007bff;
+            margin-top: 10px;
+        }
+        .btn-container {
+            text-align: center;
+            margin-top: 20px; /* Adjust this value as needed */
+        }
     </style>
 </head>
 <body>
@@ -115,13 +163,21 @@ $conn->close();
             <h1>Dashboard</h1>
         </header>
         <div class="profile-info">
+            <img src="<?php echo $profilePicturePath; ?>" alt="Profile Picture">
             <h2>Welcome, <?php echo htmlspecialchars($user['username']); ?>!</h2>
             <p>Email: <?php echo htmlspecialchars($user['email']); ?></p>
             <p>Date of Birth: <?php echo htmlspecialchars($user['date_of_birth']); ?></p>
             <p>Gender: <?php echo htmlspecialchars($user['gender']); ?></p>
         </div>
-        <a href="user_manager.php" class="btn">Manage Users</a> <!-- Button to user management page -->
-        <a href="logout.php" class="btn">Logout</a> <!-- Logout button -->
+        <div class="thought">
+            <p>"<?php echo $thought; ?>"</p>
+            <p class="author">— <?php echo $author; ?></p>
+        </div>
+        <!-- Button container -->
+        <div class="btn-container">
+            <a href="user_manager.php" class="btn">Manage Users</a>
+            <a href="logout.php" class="btn">Logout</a>
+        </div>
     </div>
 </body>
 </html>

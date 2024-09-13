@@ -16,8 +16,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = trim($_POST['password']);
     $dateOfBirth = $_POST['date_of_birth'];
     $gender = $_POST['gender'];
+    $role = $_POST['role'];
 
-    if (empty($username) || empty($email) || empty($password) || empty($dateOfBirth) || empty($gender)) {
+    if (empty($username) || empty($email) || empty($password) || empty($dateOfBirth) || empty($gender) || empty($role)) {
         echo "<script>alert('Please fill in all fields.'); window.history.back();</script>";
         $conn->close();
         exit();
@@ -51,9 +52,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt_check->close();
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-    $sql = "INSERT INTO users (username, email, password, date_of_birth, gender) VALUES (?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO users (username, email, password, date_of_birth, gender, role) VALUES (?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sssss", $username, $email, $hashed_password, $dateOfBirth, $gender);
+    $stmt->bind_param("ssssss", $username, $email, $hashed_password, $dateOfBirth, $gender, $role);
 
     if ($stmt->execute()) {
         echo "<script>alert('Registration successful!'); window.location.href = 'login.php';</script>";
@@ -184,6 +185,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
                 <option value="Other">Other</option>
+            </select>
+
+            <label for="role">Role:</label>
+            <select id="role" name="role" required>
+                <option value="">Select Role</option>
+                <option value="User">User</option>
+                <option value="Admin">Admin</option>
             </select>
 
             <input type="submit" value="Register">

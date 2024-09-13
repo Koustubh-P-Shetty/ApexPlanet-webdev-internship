@@ -19,14 +19,33 @@ if ($conn->connect_error) {
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $oldUsername = $_POST['old_username'];
-    $newUsername = $_POST['username'];
     $email = $_POST['email'];
     $dateOfBirth = $_POST['date_of_birth'];
     $gender = $_POST['gender'];
+    
+    // Handling file upload
+    $profilePicture = $_FILES['profile_picture'];
+    $profilePicturePath = '';
 
-    $sql_update = "UPDATE users SET username=?, email=?, date_of_birth=?, gender=? WHERE username=?";
+    if ($profilePicture['error'] == UPLOAD_ERR_OK) {
+        // Define the directory where files will be uploaded
+        $uploadDir = '';  // No subdirectory
+        $profilePicturePath = basename($profilePicture['name']);
+        
+        if (move_uploaded_file($profilePicture['tmp_name'], $uploadDir . $profilePicturePath)) {
+            // File uploaded successfully
+        } else {
+            echo "<p>Error uploading file.</p>";
+            exit();
+        }
+    } else {
+        // If no new file is uploaded, keep the old file
+        $profilePicturePath = $_POST['existing_profile_picture'];
+    }
+
+    $sql_update = "UPDATE users SET email=?, date_of_birth=?, gender=?, profile_picture=? WHERE username=?";
     $stmt = $conn->prepare($sql_update);
-    $stmt->bind_param("sssss", $newUsername, $email, $dateOfBirth, $gender, $oldUsername);
+    $stmt->bind_param("sssss", $email, $dateOfBirth, $gender, $profilePicturePath, $oldUsername);
 
     if ($stmt->execute()) {
         header("Location: dashboard.php");
@@ -39,7 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 $username = $_GET['username'];
-$sql_user = "SELECT username, email, date_of_birth, gender FROM users WHERE username=?";
+$sql_user = "SELECT username, email, date_of_birth, gender, profile_picture FROM users WHERE username=?";
 $stmt_user = $conn->prepare($sql_user);
 $stmt_user->bind_param("s", $username);
 $stmt_user->execute();
@@ -99,7 +118,7 @@ $conn->close();
             margin-bottom: 5px;
             display: block;
         }
-        input[type="text"], input[type="email"], input[type="date"], select {
+        input[type="text"], input[type="email"], input[type="date"], select, input[type="file"] {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
@@ -151,10 +170,9 @@ $conn->close();
 <body>
     <div class="container">
         <h2>Edit User</h2>
-        <form action="update_u.php" method="post">
+        <form action="update_u.php" method="post" enctype="multipart/form-data">
             <input type="hidden" name="old_username" value="<?php echo htmlspecialchars($user['username']); ?>">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($user['username']); ?>" required>
+            <input type="hidden" name="existing_profile_picture" value="<?php echo htmlspecialchars($user['profile_picture']); ?>">
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
             <label for="date_of_birth">Date of Birth:</label>
@@ -165,6 +183,8 @@ $conn->close();
                 <option value="female" <?php echo $user['gender'] == 'female' ? 'selected' : ''; ?>>Female</option>
                 <option value="other" <?php echo $user['gender'] == 'other' ? 'selected' : ''; ?>>Other</option>
             </select>
+            <label for="profile_picture">Profile Picture:</label>
+            <input type="file" id="profile_picture" name="profile_picture">
             <input type="submit" value="Update">
         </form>
         <a href="dashboard.php" class="btn">Back to Dashboard</a>

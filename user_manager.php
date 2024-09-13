@@ -17,9 +17,26 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch all users
-$sql_all_users = "SELECT username, email, date_of_birth, gender FROM users";
-$result_all_users = $conn->query($sql_all_users);
+// Fetch current user's role
+$current_user = $_SESSION['username'];
+$sql_current_user = "SELECT role FROM users WHERE username=?";
+$stmt_current_user = $conn->prepare($sql_current_user);
+$stmt_current_user->bind_param("s", $current_user);
+$stmt_current_user->execute();
+$result_current_user = $stmt_current_user->get_result();
+$current_user_role = 'user'; // Default to user
+if ($result_current_user->num_rows > 0) {
+    $row = $result_current_user->fetch_assoc();
+    $current_user_role = $row['role'];
+}
+$stmt_current_user->close();
+
+// Fetch users and admins
+$sql_users = "SELECT username, email, date_of_birth, gender FROM users WHERE role='user'";
+$sql_admins = "SELECT username, email, date_of_birth, gender FROM users WHERE role='admin'";
+
+$result_users = $conn->query($sql_users);
+$result_admins = $conn->query($sql_admins);
 
 $conn->close();
 ?>
@@ -108,6 +125,8 @@ $conn->close();
 <body>
     <div class="container">
         <h1>User Management</h1>
+
+        <h2>Admins</h2>
         <table>
             <tr>
                 <th>Username</th>
@@ -117,14 +136,45 @@ $conn->close();
                 <th>Actions</th>
             </tr>
             <?php
-            if ($result_all_users->num_rows > 0) {
-                while ($row = $result_all_users->fetch_assoc()) {
+            if ($result_admins && $result_admins->num_rows > 0) {
+                while ($row = $result_admins->fetch_assoc()) {
                     echo "<tr>";
                     echo "<td>" . htmlspecialchars($row['username']) . "</td>";
                     echo "<td>" . htmlspecialchars($row['email']) . "</td>";
                     echo "<td>" . htmlspecialchars($row['date_of_birth']) . "</td>";
                     echo "<td>" . htmlspecialchars($row['gender']) . "</td>";
                     echo "<td>";
+                    // Display actions for all users
+                    echo "<a href='update_u.php?username=" . urlencode($row['username']) . "' class='action-btn update-btn'>Update</a>";
+                    echo "<a href='delete_u.php?username=" . urlencode($row['username']) . "' class='action-btn delete-btn'>Delete</a>";
+                    echo "</td>";
+                    echo "</tr>";
+                }
+            } else {
+                echo "<tr><td colspan='5' class='error'>No admins found.</td></tr>";
+            }
+            ?>
+        </table>
+
+        <h2>Users</h2>
+        <table>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Date of Birth</th>
+                <th>Gender</th>
+                <th>Actions</th>
+            </tr>
+            <?php
+            if ($result_users && $result_users->num_rows > 0) {
+                while ($row = $result_users->fetch_assoc()) {
+                    echo "<tr>";
+                    echo "<td>" . htmlspecialchars($row['username']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['email']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['date_of_birth']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['gender']) . "</td>";
+                    echo "<td>";
+                    // Display actions for all users
                     echo "<a href='update_u.php?username=" . urlencode($row['username']) . "' class='action-btn update-btn'>Update</a>";
                     echo "<a href='delete_u.php?username=" . urlencode($row['username']) . "' class='action-btn delete-btn'>Delete</a>";
                     echo "</td>";
@@ -135,6 +185,7 @@ $conn->close();
             }
             ?>
         </table>
+
         <a href="dashboard.php" class="btn" style="background-color: #007bff;">Back to Dashboard</a>
     </div>
 </body>
